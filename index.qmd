@@ -1,0 +1,312 @@
+---
+title: "Operationalizing mobile media <i>non-use</i> with logging data in experience sampling studies"
+# subtitle: ""
+title-slide-attributes:
+  data-background-image: img/sunset.png
+  data-background-size: cover
+  data-background-opacity: ".5"
+  data-background-color: "#041E42"
+author: 
+  - name: Julius Klingelhoefer 
+    url: https://github.com/klingelhoefer/
+    affiliation: FAU Erlangen-Nürnberg
+    affiliation-url: https://www.kommunikationswissenschaft.rw.fau.de/julius-klingelhoefer/
+  - name: Alicia Gilbert 
+    affiliation: JGU Mainz
+    affiliation-url: https://www.mediapsychology.ifp.uni-mainz.de/team/alicia-gilbert/
+  - name: Christoph Adrian
+    affiliation: FAU Erlangen-Nürnberg
+    affiliation-url: https://www.kowi.rw.fau.de/person/christoph-adrian/
+  - name: Adrian Meier
+    affiliation: FAU Erlangen-Nürnberg
+    affiliation-url: https://www.communicationscience.rw.fau.de/prof-dr-adrian-meier/
+date: "`r Sys.Date()`" 
+date-format: "DD.MM.YYYY"
+format:
+  revealjs:
+    include-in-header: eventlistener.html
+    width: 1920
+    height: 1080
+    menu: false
+    toc: true
+    toc-depth: 1
+    toc-title: "Contents"
+    embed-resources: true #standalone
+    auto-animate-duration: 0.75
+    auto-animate-easing: ease-in-out
+    transition: slide
+    theme: [simple, theme.scss]
+    background-transition: fade
+    transition-speed: fast 
+    fontsize: 5em
+    slide-number: c
+    preview-links: auto
+#    logo: img/jp_logo.svg
+#    link-external-icon: true
+#    link-external-newwindow: true
+#    link-external-filter: #'^(?:http|https):\/\/klingelhoefer.github.io'
+    footer: "
+        <div class = 'footer-left'>WI Digital Methods Colloquium 2023</div>
+        <div class = 'footer-center'>Julius Klingelhoefer, Alicia Gilbert, Christoph Adrian, & Adrian Meier</div>
+        <div class = 'footer-right'>&nbsp;</div>
+        "
+execute:
+  echo: false
+bibliography: references.bib
+csl: apa.csl
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup}
+# Loading packages
+
+devtools::install_github("klingelhoefer/quartoMorphSvg")
+
+
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(
+  tidyverse, psych, janitor, renv, readxl,
+  lubridate, svglite, svgtools, knitr,
+  kableExtra, jtools, sjmisc, sjPlot,
+  labelled,
+  xlsx,
+  performance,
+  qgraph,
+  kableExtra,
+  plotly,
+  svgtools,
+  Hmisc,
+  RColorBrewer,
+  lavaan,
+  semTools,
+  psy,
+  ggforce,
+  ggdist,
+  gghalves,
+  DiagrammeR,
+  htmltools,
+  lme4,
+  lmerTest,
+  reshape2,
+  gtable,
+  quartoMorphSvg
+
+  )
+
+## Loading data
+if (file.exists(
+  "../../momentary-digital-disconnection/study/data/data_long.Rda"
+)
+) {
+  base::load(
+    "../../momentary-digital-disconnection/study/data/data_long.Rda"
+  )
+}
+
+## setting up output function
+### return percentage formatted
+p = function(
+    number,
+    per = F,
+    digits = 2
+) {
+  number = as.numeric(number)
+  if(per == F) {
+    r = round(number, digits = digits)
+  }
+  if(per == T & number < 1 & number > - 1) {
+    r = round(number, digits = digits + 2)
+    r = paste0(prettyNum(r*100, format = "f"), "%")
+  }
+  return(r)
+}
+
+
+```
+
+# Background
+
+## Motivation
+
+-   Self-reports - esp. about media use - can be biased [@parry2021]
+
+-   Connectivity norms may influence self-reports [@geber2023a]
+
+-   Trace data could provide superior estimates (reliability, inobstrusive, resolution)
+
+    -   Logged app use
+
+    -   Notifications
+
+    -   ...
+
+# "Objective" (Non-)use Parameters
+
+## Problem
+
+::: columns
+::: {.column width="70%"}
+-   Usually we don't want to predict raw log data
+
+::: fragment
+-   Rather, measure psychological concepts, e.g.:
+    -   Distraction
+    -   Digital disconnection
+    -   Habits
+    -   ...
+:::
+
+::: fragment
+-   Behavioral and cognitive-emotional components
+:::
+
+::: fragment
+-   Accessible for device and application level
+-   Obstacles in assessing interaction & message level [@pouwels2023]
+:::
+:::
+
+::: {.column width="30%"}
+```{r}
+morph_svg(folder = "images/cmc_taxonomy")
+```
+
+[@meier2021]
+:::
+:::
+
+::: notes
+-   Difficult to access content and interactions, as technical and privacy issues often arise
+:::
+
+## Approaches
+
+-   Using category measures
+
+    -   e.g., screentime, number of apps
+
+-   Generating/aggregating alternative measures
+
+    -   e.g., fragmentation [@siebers2023]
+
+-   ...
+
+# Our Study
+
+## Description
+
+-   Two-week experience sampling study
+-   *N* = 178 Android users
+-   *T* = 7,823 disconnection questionnaires (disconnection, media use, well-being)
+-   8,268,433 log events (app started, screen on/off, notification)
+
+## Issues
+
+![](images/overview_2_cut.jpg)
+
+## Digital Disconnection Self-Report
+
+```{r}
+# plot
+x = NULL; y = NULL
+x[1] = dl_raw %>% filter(valid_probe & valid_presurvey & valid_situation) %>% rowwise %>% mutate(disco_all = sum(disco_1:disco_5)) %>% select(disco_all) %>% table(.) %>% .[[2]]; y[1] = "Any disconnection"
+x[2] = dl_raw %>% filter(valid_probe & valid_presurvey & valid_situation) %>% select(disco_1) %>% table(.) %>% .[[2]]; y[2] = "Devices"
+x[3] = dl_raw %>% filter(valid_probe & valid_presurvey & valid_situation) %>% select(disco_2) %>% table(.) %>% .[[2]]; y[3] = "Applications"
+x[4] = dl_raw %>% filter(valid_probe & valid_presurvey & valid_situation) %>% select(disco_3) %>% table(.) %>% .[[2]]; y[4] = "Features"
+x[5] = dl_raw %>% filter(valid_probe & valid_presurvey & valid_situation) %>% select(disco_4) %>% table(.) %>% .[[2]]; y[5] = "Interactions"
+x[6] = dl_raw %>% filter(valid_probe & valid_presurvey & valid_situation) %>% select(disco_5) %>% table(.) %>% .[[2]]; y[6] = "Content"
+x[7] = dl_raw %>% filter(valid_probe & valid_presurvey & valid_situation) %>% select(disco_5) %>% table(.) %>% .[[2]]; y[7] = "No disconnection"
+d = data.frame(x,y)
+
+d$y <- factor(d$y, levels = d$y)
+
+p = ggplot(data = d, aes(x = y, y = x)) +
+  geom_col(fill=c("black", "#000952", "#09407f", "#0e5d97", "#168ec0", "#1cb3de", "gray")) +
+  theme_bw() +
+  labs(x = "Disconnection type", y = "Frequency") +
+  theme(text = element_text(size = 30)) 
+
+ggplotly(p, width = 1920, height=700) %>% animation_opts(100)
+```
+
+Question: Whether disconnection happened at these levels in the last 2h.
+
+## Logged measures: Screentime
+
+| y                     | *r*    | 95%-CI Lower | 95%-CI Upper | *p*     |
+|-----------------------|--------|--------------|--------------|---------|
+| General disconnection | \- .16 | - .18        | - .14        | \< .001 |
+|   Device              | - .16  | - .18        | - .14        | \< .001 |
+|   Application         | - .15  | - .17        | - .13        | \< .001 |
+|   Feature             | - .12  | - .14        | - .09        | \< .001 |
+|   Interaction         | - .10  | - .12        | - .07        | \< .001 |
+|   Content             | - .09  | - .11        | - .07        | \< .001 |
+
+Correlation with logged screentime, *N* = 7598
+
+## Disconnection as Substitution
+
+::: columns
+::: {.column width="50%"}
+```{r}
+morph_svg(folder = "images/chrome")
+```
+:::
+
+::: {.column .fragment width="50%"}
+```{r}
+morph_svg(folder = "images/netflix")
+```
+:::
+:::
+
+## Discussion
+
+::: fragment
+-   ➡️ Showed link between self-reported and logged disconnection
+
+-   ➡️ Disconnection behavioral vs. cognitive components
+
+-   ➡️ Disconnection as reduction vs. disconnection as substitution
+:::
+
+::: fragment
+-   Future directions
+
+    -   Can complex behaviors be assessed through logging data?
+
+    -   Explore potential aggregation avenues
+
+    -   Evaluate logging methods
+
+-   ❓Should we assess such constructs with digital trace data, and if so, how?
+:::
+
+# Thank you! {.end}
+
+Questions?
+
+## References
+
+::: {#refs}
+:::
+
+# Supplement
+
+## 
+
+![](images/Picture2.svg)
+
+## Logged measures: Number of Apps
+
+| y                     | *r*    | 95%-CI Lower | 95%-CI Upper | *p*     |
+|-----------------------|--------|--------------|--------------|---------|
+| General disconnection | \- .05 | - .07        | - .03        | \< .001 |
+|    Device             | - .04  | - .06        | - .01        | .003    |
+|    Application        | - .05  | - .07        | - .02        | \< .001 |
+|    Feature            | - .04  | - .07        | - .02        | .001    |
+|    Interaction        | - .04  | - .06        | - .01        | .002    |
+|    Content            | - .02  | - .05        |  .00         | .062    |
+
+Correlation with logged screentime, *N* = 7598

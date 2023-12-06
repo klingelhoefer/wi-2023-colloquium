@@ -1,0 +1,143 @@
+<!-- adds option to click code to highlight it-->
+<script>
+document.addEventListener('click', function handleClick(event) {
+  event.target.classList.toggle(
+    'active');
+});
+</script>
+
+
+<!-- adds logo with js-->
+<script id = "include_favicon_script">
+function setFavicons(favImg){let headTitle = document.querySelector('head'); let setFavicon = document.createElement('link'); setFavicon.setAttribute('rel','shortcut icon'); setFavicon.setAttribute('href',favImg); headTitle.appendChild(setFavicon);} setFavicons('img/logo_fau.svg');
+</script>
+
+
+<!-- makes font smaller if it overflows -->
+<script>
+  // Function to find overflowing sections and adjust font sizes
+  function findOverflowingSlides() {
+      // Get all sections with the class "slide"
+      var slideSections = document.querySelectorAll('section.slide');
+  
+      // Iterate through each section
+      slideSections.forEach(function(slideSection) {
+          var startTime = performance.now(); // Record the start time
+  
+          // Check if the content overflows the container
+          while (
+              slideSection.scrollWidth > slideSection.clientWidth ||
+              slideSection.scrollHeight > slideSection.clientHeight
+          ) {
+              // Log section with overflow
+              //console.log('Overflow found in section:', slideSection);
+  
+              // Check if it's been more than 1 second
+              if (performance.now() - startTime > 10) {
+                  console.log('Timeout: breaking out of the loop');
+                  break;
+              }
+  
+              // Get all elements inside the section
+              var elementsInsideSection = slideSection.querySelectorAll('*');
+  
+              // Loop through each element and decrease font size
+              elementsInsideSection.forEach(function(element) {
+                  var tagName = element.tagName.toLowerCase();
+                  
+                  // Exclude h1, h2, h3, and h4 elements from font size adjustment
+                  if (tagName !== 'h1' && tagName !== 'h2' && tagName !== 'h3' && tagName !== 'h4') {
+                      var computedStyle = window.getComputedStyle(element);
+                      var currentFontSize = parseFloat(computedStyle.getPropertyValue('font-size'));
+                      // Decrease font size by 1 pixel
+                      element.style.fontSize = (currentFontSize - 1) + 'px';
+                  }
+              });
+          }
+      });
+  }
+  
+  // Function to handle "next" button press
+  function handleNextButtonPress() {
+      // Call the findOverflowingSlides function when the "right arrow" key is pressed
+      findOverflowingSlides();
+  }
+  
+  // Call the function on the load event of the document
+  document.addEventListener('DOMContentLoaded', function() {
+      findOverflowingSlides();
+  
+      // Add event listener for window resize
+      window.addEventListener('resize', function() {
+          findOverflowingSlides();
+      });
+  
+      // Add event listener for "right arrow" key press
+      document.addEventListener('keydown', function(event) {
+          // Check if the pressed key is the "right arrow" key
+          if (event.keyCode === 39) {
+              handleNextButtonPress();
+          }
+      });
+  });
+  </script>
+
+
+
+
+<!-- make footer change color if the background is dark -->
+
+
+<script> 
+// Function to be executed after a delay
+function delayedExecution() {
+    // Select the target node
+    var targetNode = document.body;
+
+    // Create a MutationObserver instance
+    var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            // Check if the mutation is on a <section> element with the classes "slide" and "level1"
+            if (
+                mutation.type === 'attributes' &&
+                mutation.attributeName === 'class' &&
+                mutation.target.tagName.toLowerCase() === 'section' &&
+                mutation.target.classList.contains('slide') &&
+                mutation.target.classList.contains('level1')
+            ) {
+                var isPresentNow = mutation.target.classList.contains('present');
+                var wasPresentBefore = mutation.oldValue && mutation.oldValue.includes('present');
+                
+                // Check if the ".present" class was added or removed
+                if (isPresentNow !== wasPresentBefore) {
+                    // Find the "reveal" elements and toggle the "has-dark-background" class
+                    var revealElements = document.querySelectorAll('.reveal');
+                    revealElements.forEach(function(revealElement) {
+                        if (isPresentNow) {
+                            revealElement.classList.add('has-dark-background');
+                        } else {
+                            revealElement.classList.remove('has-dark-background');
+                        }
+                    });
+                    
+                    var action = isPresentNow ? 'added to' : 'removed from';
+                    //console.log('".present" class', action, 'the <section> element.');
+                }
+            }
+        });
+    });
+
+    // Configuration of the observer
+    var config = { attributes: true, subtree: true, attributeFilter: ['class'], attributeOldValue: true };
+
+    // Start observing the target node for configured mutations
+    observer.observe(targetNode, config);
+}
+
+// Execute the function after a delay (0.1 seconds) after the complete document is loaded
+window.addEventListener('load', function() {
+    setTimeout(delayedExecution, 100);
+});
+
+
+  </script>
