@@ -60,9 +60,7 @@ editor_options:
 
 ```{r setup}
 # Loading packages
-
 devtools::install_github("klingelhoefer/quartoMorphSvg")
-
 
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(
