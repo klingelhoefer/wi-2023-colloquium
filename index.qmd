@@ -96,11 +96,11 @@ pacman::p_load(
 
 ## Loading data
 if (file.exists(
-  "../../momentary-digital-disconnection/study/data/data_long.Rda"
+  "../momentary-digital-disconnection/study/data/data_long.Rda"
 )
 ) {
   base::load(
-    "../../momentary-digital-disconnection/study/data/data_long.Rda"
+    "../momentary-digital-disconnection/study/data/data_long.Rda"
   )
 }
 
