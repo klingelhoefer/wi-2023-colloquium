@@ -60,7 +60,8 @@ editor_options:
 
 ```{r setup}
 # Loading packages
-devtools::install_github("klingelhoefer/quartoMorphSvg")
+
+if(!require("quartoMorphSvg")) devtools::install_github("klingelhoefer/quartoMorphSvg")
 
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(
@@ -145,7 +146,7 @@ p = function(
 
 ::: columns
 ::: {.column width="70%"}
--   Usually we don't want to predict raw log data
+-   Usually we're not interested in raw log data
 
 ::: fragment
 -   Rather, measure psychological concepts, e.g.:
